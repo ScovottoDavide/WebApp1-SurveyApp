@@ -1,3 +1,5 @@
+
+/* ADMIN LOGIN-LOGOUT-INFO API's */
 async function login(credentials) {
     let response = await fetch('/api/sessions', {
         method: 'POST',
@@ -15,7 +17,7 @@ async function login(credentials) {
 }
 
 async function getUserInfo() {
-    const response = await fetch('api/sessions/current');
+    const response = await fetch('/api/sessions/current');
     const userInfo = await response.json();
     if (response.ok) {
         return userInfo;
