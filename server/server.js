@@ -4,6 +4,7 @@ const morgan = require('morgan');
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const session = require('express-session');
+const dao = require('./dao');
 const userDao = require('./user-dao');
 
 /*** Set up Passport ***/
@@ -30,6 +31,13 @@ passport.deserializeUser((id, done) => {
           done(err, null);
       });
 });
+
+const isLoggedIn = (req, res, next) => {
+  if (req.isAuthenticated())
+      return next();
+
+  return res.status(401).json({ error: 'Not authorized!' });
+}
 
 // init express
 const app = new express();
@@ -78,6 +86,43 @@ app.post('/api/logout', (req, res) => {
   req.logout();
   res.end();
 });
+
+/* SURVEY DB API's */
+
+//create a new survey
+app.post('/api/addSurvey', isLoggedIn, async (req, res) => {
+  const newSurvey = {
+    id: req.body.id,
+    title: req.body.title,
+    questions: req.body.questions,
+  };
+  try{
+    await dao.createSurvey(newSurvey);
+    res.status(201).end();
+  }catch(err){
+    res.status(503).json({error: `Database error during creation of survey ${newSurvey.title}`})
+  }
+})
+
+// Get the list of all surveys
+app.get('/api/surveys', async(req, res) => {
+  try{
+    const surveys = await dao.listSurveys();
+    res.json(surveys); 
+  }catch(err){
+    res.status(500).end();
+  }
+})
+
+// Get the list of all questions
+app.get('/api/surveys/questions', async(req, res) => {
+  try{
+    const questions = await dao.listQuestions();
+    res.json(questions); 
+  }catch(err){
+    res.status(500).end();
+  }
+})
 
 // activate the server
 app.listen(port, () => {
