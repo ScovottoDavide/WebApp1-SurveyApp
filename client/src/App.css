@@ -24,6 +24,19 @@
   border-radius: 50%;
 }
 
+.question-border{
+  border-style: groove;
+  border-radius: 5px;
+  border-color: lightslategray;
+}
+
+.title-border{
+  border-style: dotted;
+  border-radius: 5px;
+  border-color: darkgray;
+}
+
+
 .login{
   height: 100%;
   width: 100%;

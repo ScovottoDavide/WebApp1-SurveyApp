@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { Container, Row, Col, Form, Button, InputGroup, Card } from 'react-bootstrap';
-import { PlusCircle, Dash, Arrow90degDown, Arrow90degUp } from 'react-bootstrap-icons'
+import { Container, Row, Col, Form, Button, InputGroup } from 'react-bootstrap';
+import { PlusCircle, Arrow90degDown, Arrow90degUp, XSquare, Trash } from 'react-bootstrap-icons'
 import { Redirect } from 'react-router';
 
 function AddSurvey(props) {
     const [titleSurvey, setTitleSurvey] = useState("");
     const [questions, setQuestions] = useState([]);
+    const [errors, setErrors] = useState({});
 
     const setTitle = (value) => {
         setTitleSurvey(value);
@@ -13,17 +14,34 @@ function AddSurvey(props) {
 
     const AddQuestion = () => {
         const lastId = props.inFormQuestions.length === 0 ? 0 : props.inFormQuestions[props.inFormQuestions.length - 1].id;
-        const q = { id: lastId + questions.length + 1, type: 1, options: [{ id: 0, titleO: "", idQ: questions.length }] };
+        const q = { id: lastId + questions.length + 1, type: 1, min: 0, max: 1, options: [{ id: 0, titleO: "", idQ: questions.length }] };
         setQuestions(qs => [...qs, q]);
-        console.log(questions);
+    }
+
+    const findFormErrors = () => {
+        const newErrors = {};
+        if (titleSurvey === '')
+            newErrors.titleS = "Cannot be blank";
+        questions.forEach(q => {
+            if (q.titleQ === undefined)
+                newErrors.titleQ = "Cannot be blank";
+            q.options.forEach(o => {
+                if (o.titleO === '') newErrors.titleO = "Cannot be blank";
+            })
+        })
+        return newErrors;
     }
 
     const handleSubmit = (event) => {
         event.preventDefault();
-
-        const newSurvey = { id: props.surveys.length + 1, title: titleSurvey, questions: questions };
-        props.surveyAdder(newSurvey);
-        props.setCompiling(false);
+        const errs = findFormErrors();
+        if (Object.keys(errs).length > 0)
+            setErrors(errs);
+        else {
+            const newSurvey = { id: props.surveys.length + 1, title: titleSurvey, questions: questions };
+            props.surveyAdder(newSurvey);
+            props.setCompiling(false);
+        }
     }
 
     return (
@@ -33,12 +51,19 @@ function AddSurvey(props) {
                 <Col lg={7} className="text-center">
                     <h3 className="mb-5">Prepare a new survey to publish!</h3>
                     <Form>
-                        <Col sm={6}> <Form.Control size="lg" type="input" placeholder="Untitled Survey" onChange={(event) => setTitle(event.target.value)} /> </Col>
+                        <Col sm={6} className="title-border">
+                            <Form.Group>
+                                <Form.Text as="h4" className="text-left mb-3">Choose a title...</Form.Text>
+                                <Form.Control size="md" type="input" isInvalid={!!errors.titleS} value={titleSurvey ? titleSurvey : ''} placeholder="Untitled" onChange={(event) => setTitle(event.target.value)} />
+                                <Form.Control.Feedback type="invalid"> {errors.titleS} </Form.Control.Feedback>
+                            </Form.Group>
+                        </Col>
                         <Form.Group className="mb-3 mt-5" controlId="formQuestion">
                             <Form.Row><h5 className="ml-3"> Click to add a new Question
-                                <Button className="mb-2" size="md" variant="outline-ligth" onClick={() => AddQuestion()}> <PlusCircle /> </Button></h5></Form.Row>
-                            {questions.map((q) => <QuestionRow key={q.id} question={q} questions={questions} setQuestions={setQuestions} />)}
-                            <Button type="submit" variant="danger">Cancel</Button>
+                                <Button className="mb-2" size="md" variant="outline-ligth" onClick={() => AddQuestion()}> <PlusCircle /> </Button></h5>
+                            </Form.Row>
+                            {questions.map((q) => <QuestionRow key={q.id} question={q} questions={questions} setQuestions={setQuestions} errors={errors} />)}
+                            <Button type="submit" variant="danger" onClick={() => props.setCompiling(false)}>Cancel</Button>
                             <Button className="ml-3" type="submit" variant="success" onClick={(event) => handleSubmit(event)}>Publish</Button>
                             {props.compiling ? '' : <Redirect to="/admin" />}
                         </Form.Group>
@@ -84,50 +109,105 @@ function QuestionRow(props) {
         props.setQuestions(qs => qs.filter(q => q.id !== id));
     }
 
+    const arrMove = (arr, fromIndex, toIndex) => {
+        var element = arr[fromIndex];
+        arr.splice(fromIndex, 1);
+        arr.splice(toIndex, 0, element);
+    }
+
     const handleUp = () => {
         const i = props.questions.indexOf(props.question); // index of selected question
         const j = i - 1; // index of top question
-        
-        if(props.questions.length===1){
-            console.log("1" + props.questions.length);
-            return ;
+
+        if (props.questions.length === 1) {
+            return;
         }
-        if(props.questions.length > 1){
-            if(props.questions[i] === props.questions[0]){
-                console.log("2" + props.questions[i] + " " + props.questions[0]);
+        if (props.questions.length > 1) {
+            if (props.questions[i] === props.questions[0]) {
                 // trying to move already the top one
-                return ;
-            }
-            else{
+                return;
             }
         }
-        const tmp = props.questions[i];
-        console.log(tmp);
-        props.questions[i] = props.questions[j];
-        console.log(props.questions[i]);
-        props.question[j] = tmp; 
-        console.log(props.questions[j]);
-        console.log("sc " + props.questions);
-        props.setQuestions(props.questions);
+
+        arrMove(props.questions, i, j);
+
+        props.setQuestions([...props.questions]);
+    }
+
+    const handleDown = () => {
+        const i = props.questions.indexOf(props.question);
+        const j = i + 1;
+
+        if (props.questions.length === 1) {
+            return;
+        }
+        if (props.questions.length > 1) {
+            if (props.questions[i] === props.questions[props.questions.length - 1]) {
+                // trying to move already the bot one
+                return;
+            }
+        }
+
+        arrMove(props.questions, i, j);
+
+        props.setQuestions([...props.questions]);
+
+    }
+
+    const handleMin = (value) => {
+        if (value)
+            props.question.min = 1;
+        else props.question.min = 0;
+        props.setQuestions([...props.questions]);
+    }
+
+    const handleMax = (value) => {
+        props.question.max = value;
+        props.setQuestions([...props.questions]);
     }
 
     return (
         <>
-            <div className="mt-4">
-                <i><strong>Fill up your question...</strong></i><Button className="ml-3 mb-1" variant="outline-danger" size="sm" onClick={() => { deleteQuestion(props.question.id) }}><Dash /></Button>
-                <Button className="ml-3 mb-1" variant="outline-success" size="sm"><Arrow90degDown /></Button>
-                <Button className="ml-3 mb-1" variant="outline-success" size="sm"><Arrow90degUp onClick={handleUp}/></Button>
-            </div>
-            <Form.Row className="mt-3">
-                <Col><Form.Control type="text" placeholder="Enter Question" onChange={(event) => setTitle(event.target.value)} /> </Col>
-                <Col>
-                    <Form.Control as="select" onChange={(event) => handleChoice(event)} >
-                        <option>Multiple Choice</option>
-                        <option>Open Answer</option>
-                    </Form.Control></Col>
-            </Form.Row>
-            {choice && props.question.options.map((o) => <MultipleChoiceRow key={o.id} option={o} questions={props.questions} question={props.question} setQuestions={props.setQuestions} />)}
-            {!choice && <OpenChoiceRow />}
+            <Container className="question-border mb-5">
+                <div className="mt-4">
+                    <i><strong>Question # {props.questions.indexOf(props.question) + 1}</strong></i><Button className="ml-3 mb-1" variant="outline-danger" size="sm" onClick={() => { deleteQuestion(props.question.id) }}><Trash /></Button>
+                    <Button className="ml-3 mb-1" variant="outline-success" size="sm"><Arrow90degDown onClick={handleDown} /></Button>
+                    <Button className="ml-3 mb-1" variant="outline-success" size="sm"><Arrow90degUp onClick={handleUp} /></Button>
+                </div>
+                <Form.Row className="mt-3 mb-2">
+                    <Col className="d-flex justify-content-left">
+                        <Form.Switch custom id={props.question.id} label="Required" checked={props.question.min ? props.question.min : 0} onChange={(event) => handleMin(event.target.checked)} />
+                    </Col>
+                    <Col>
+                        <Form.Label>Select max answerable options</Form.Label>
+                    </Col>
+                    <Col sm={3}>
+                        <Form.Control as="select" custom onChange={(event) => handleMax(event.target.value)}>
+                            {choice ? props.question.options.map(o =>
+                                <option key={o.id}>{o.id + 1}</option>
+                            ) : <option>1</option>
+                            }
+                        </Form.Control>
+                    </Col>
+                </Form.Row>
+                <Form.Row className="mt-3">
+                    <Col>
+                        <Form.Control type="text" placeholder="Enter Question" isInvalid={!!props.errors.titleQ}
+                            value={props.question.titleQ ? props.question.titleQ : ''} onChange={(event) => setTitle(event.target.value)} />
+                        <Form.Control.Feedback type="invalid"> {props.errors.titleQ} </Form.Control.Feedback>
+                    </Col>
+                    <Col>
+                        <Form.Control as="select" onChange={(event) => handleChoice(event)} >
+                            <option>Multiple Choice</option>
+                            <option>Open Answer</option>
+                        </Form.Control>
+                    </Col>
+                </Form.Row>
+                {choice && props.question.options.map((o) =>
+                    <MultipleChoiceRow key={o.id} option={o} questions={props.questions} question={props.question} setQuestions={props.setQuestions} errors={props.errors} />)
+                }
+                {!choice && <OpenChoiceRow />}
+            </Container>
         </>
 
     );
@@ -166,16 +246,33 @@ function MultipleChoiceRow(props) {
         });
     }
 
+    const arrDelete = (arr, Index) => {
+        arr.splice(Index, 1);
+    }
+
+    const deleteOption = (id) => {
+        const tmp = props.question.options[id + 1].id;
+        props.question.options[id + 1].id = props.question.options[id].id
+        props.question.options[id].id = tmp;
+
+        arrDelete(props.question.options, id);
+
+        props.setQuestions([...props.questions]);
+    }
+
     return (
         <Form.Row className="mt-3">
             <Col sm={6}>
                 <InputGroup className="mb-3">
                     <InputGroup.Checkbox />
-                    <Form.Control placeholder="Option 1" onChange={(event) => setTitleO(event.target.value)} />
+                    <Form.Control placeholder="Write Option" isInvalid={!!props.errors.titleO} value={props.option.titleO ? props.option.titleO : ''} onChange={(event) => setTitleO(event.target.value)} />
+                    <Form.Control.Feedback type="invalid"> {props.errors.titleO} </Form.Control.Feedback>
                 </InputGroup>
             </Col>
             {props.option.id === props.question.options.length - 1 ?
-                <Col sm={1}><Button className="mt-1" size="sm" variant="outline-success" onClick={AddOption}> <PlusCircle /> </Button> </Col> : ''}
+                <Col sm={1}><Button className="mt-1" size="sm" variant="outline-success" onClick={AddOption}> <PlusCircle /> </Button> </Col>
+                :
+                <Col sm={1}><Button className="mt-1" size="sm" variant="outline-warning" onClick={() => { deleteOption(props.option.id) }}> <XSquare /> </Button> </Col>}
         </Form.Row>
     );
 }

@@ -5,10 +5,6 @@ const db = require('./db');
 // POST to create Survey in the db
 exports.createSurvey = (survey) => {
     return new Promise((resolve, reject) => {
-        console.log(survey);
-        survey.questions.forEach(question => {
-            this.addQuestion(question, survey.id);
-        });
         const sql = 'INSERT INTO surveys(title) VALUES(?)';
         db.run(sql, [survey.title], function (err) {
             if (err) {
@@ -22,12 +18,8 @@ exports.createSurvey = (survey) => {
 
 exports.addQuestion = (question, idS) => {
     return new Promise((resolve, reject) => {
-        console.log(question);
-        question.options.forEach(option => {
-            this.addOption(option, question.id);
-        })
-        const sql = 'INSERT INTO questions(idQ, titleQ, type, idS, mandatory) VALUES(?, ?, ?, ?, ?)';
-        db.run(sql, [question.id, question.titleQ, question.type, idS, 0], function (err) {
+        const sql = 'INSERT INTO questions(titleQ, type, idS, min, max) VALUES(?, ?, ?, ?, ?)';
+        db.run(sql, [question.titleQ, question.type, idS, question.min, question.max], function (err) {
             if (err) {
                 reject(err);
                 return;
@@ -39,9 +31,8 @@ exports.addQuestion = (question, idS) => {
 
 exports.addOption = (option, idQ) => {
     return new Promise((resolve, reject) => {
-        console.log(option);
-        const sql = 'INSERT INTO options(idO, titleO, idQ) VALUES(?, ?, ?)';
-        db.run(sql, [option.id, option.titleO, idQ], function (err) {
+        const sql = 'INSERT INTO options(titleO, idQ) VALUES(?, ?)';
+        db.run(sql, [option.titleO, idQ], function (err) {
             if (err) {
                 reject(err);
                 return;
