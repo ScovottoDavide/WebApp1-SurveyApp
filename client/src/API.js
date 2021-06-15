@@ -43,7 +43,7 @@ async function logout() {
 function AddSurveyDB(survey){
     // call POST /api/addSurvey
     return new Promise((resolve, reject) => {
-        const s = {id: survey.id, title: survey.title, questions: survey.questions};
+        const s = {id: survey.id, title: survey.title, answers: survey.answers, questions: survey.questions};
         fetch('/api/addSurvey', {
             method: 'POST', 
             headers: {'Content-type': 'application/json'},
@@ -57,21 +57,31 @@ function AddSurveyDB(survey){
 }
 
 async function RetrieveSurveyList() {
-    // call GET /api/tasks
+    // call GET /api/surveys
     const response = await fetch('/api/surveys');
     const list = await response.json();
     if (response.ok)
-        return list.map( l => ({id: l.id, title: l.title, questions: l.questions}));
+        return list.map( l => ({id: l.id, title: l.title, answers: l.answers, userId: l.userId, questions: l.questions}));
     else throw list;
 }
 
 async function RetrieveQuestionsList() {
-    // call GET /api/tasks
+    // call GET /api/surveys/questions
     const response = await fetch('/api/surveys/questions');
     const list = await response.json();
     if (response.ok)
         return list;
     else throw list;
 }
-const API = {login, getUserInfo, logout, AddSurveyDB, RetrieveSurveyList, RetrieveQuestionsList};
+
+async function RetrieveAllSurveys(){
+    // call GET /api/surveys/all
+    const response = await fetch('/api/surveys/all');
+    const list = await response.json();
+    if (response.ok)
+        return list.map( l => ({id: l.id, title: l.title, answers: l.answers, userId: l.userId, questions: l.questions}));
+    else throw list;
+}
+
+const API = {login, getUserInfo, logout, AddSurveyDB, RetrieveSurveyList, RetrieveQuestionsList, RetrieveAllSurveys};
 export default API;

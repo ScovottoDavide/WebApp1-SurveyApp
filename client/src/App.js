@@ -14,6 +14,7 @@ function App() {
   const [loggedIn, setLoggedIn] = useState(false);
   const [mounting, setMounting] = useState(true);
   const [userInfo, setUserInfo] = useState({});
+  const [allSurveys, setAllSurveys] = useState([]);
 
   useEffect(() => {
     const checkAuth = () => {
@@ -28,6 +29,17 @@ function App() {
     };
     checkAuth();
   }, []);
+
+  useEffect(() => {
+    const getAllSurveys = async () => {
+      const list = await API.RetrieveAllSurveys();
+      setAllSurveys(list);
+    }
+    getAllSurveys().then(() => {
+    }).catch(err => {
+      console.error(err);
+    });;
+  }, [allSurveys.length]);
 
   const doLogin = async (credentials) => {
     try {
@@ -63,7 +75,7 @@ function App() {
               {mounting ? '' : <>{loggedIn ? <AdminPage loggedIn={loggedIn} doLogout={doLogout} userInfo={userInfo} errorMsg={errorMsg} setErrorMsg={setErrorMsg} /> : <Redirect to="/user" />}</>}
             </Route>
             <Route exact path="/user">
-              {mounting ? '' : <>{loggedIn ? <Redirect to="/admin" /> : <UserPage loggedIn={loggedIn} doLogout={doLogout} userInfo={userInfo} />}</>}
+              {mounting ? '' : <>{loggedIn ? <Redirect to="/admin" /> : <UserPage loggedIn={loggedIn} doLogout={doLogout} userInfo={userInfo} allSurveys={allSurveys}/>}</>}
             </Route>
             <Route path="/">
               {mounting ? '' : <>{loggedIn ? <Redirect to="/admin" /> : <Redirect to="/user" />}</>}

@@ -5,8 +5,8 @@ const db = require('./db');
 // POST to create Survey in the db
 exports.createSurvey = (survey) => {
     return new Promise((resolve, reject) => {
-        const sql = 'INSERT INTO surveys(title) VALUES(?)';
-        db.run(sql, [survey.title], function (err) {
+        const sql = 'INSERT INTO surveys(title, answers, userId) VALUES(?, ?, ?)';
+        db.run(sql, [survey.title, survey.answers, survey.user], function (err) {
             if (err) {
                 reject(err);
                 return;
@@ -42,17 +42,18 @@ exports.addOption = (option, idQ) => {
     })
 }
 
-//GET the list of all surveys
-exports.listSurveys = () => {
+//GET the list of all surveys per user 
+exports.listSurveys = (userid) => {
     return new Promise((resolve, reject) => {
-        const sql = 'SELECT * FROM surveys';
-        db.all(sql, [], async (err, rows) => {
+        const sql = 'SELECT * FROM surveys WHERE userId=?';
+        db.all(sql, [userid], async (err, rows) => {
             if (err) {
                 reject(err);
                 return;
             }
             const questions = await this.listQuestions();
-            const surveys = rows.map(r => ({ id: r.id, title: r.title, questions: questions}));
+            const surveys = rows.map(r => ({ id: r.id, title: r.title, answers: r.answers, userId: r.userId, questions: questions.filter(q => q.idS === r.id)}));
+            console.log(surveys);
             resolve(surveys);
         })
     })
@@ -84,6 +85,21 @@ exports.listOptions = () => {
             }
             const options = rows.map((o) => ({ id: o.idO, titleO: o.titleO, idQ: o.idQ }));
             resolve(options);
+        })
+    })
+}
+
+exports.listAllSurveys = () => {
+    return new Promise((resolve, reject) => {
+        const sql = 'SELECT * FROM surveys';
+        db.all(sql, [], async (err, rows) => {
+            if(err){
+                reject(err);
+                return;
+            }
+            const questions = await this.listQuestions();
+            const surveys = rows.map((r) => ({ id: r.id, title: r.title, answers: r.answers, userId: r.userId, questions: questions}));
+            resolve(surveys);
         })
     })
 }

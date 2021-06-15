@@ -1,11 +1,13 @@
 import SidebarSurvey from "./Sidebar";
 import SurveyNavbar from './Navbar';
+import AddSurvey from './AddSurvey'
+import AdminPageContent from "./AdminPageContent";
+import API from '../API'
 import { Container, Alert, Button } from 'react-bootstrap';
 import { Route, Switch } from 'react-router'
 import { BrowserRouter as Router, NavLink } from 'react-router-dom';
-import AddSurvey from './AddSurvey'
 import { useState, useEffect } from "react";
-import API from '../API'
+
 
 
 function AdminPage(props) {
@@ -65,6 +67,7 @@ function AdminPage(props) {
                                 <Container className="col-sm-8 col-12 below-nav">
                                     {props.errorMsg.msg && <Alert variant={props.errorMsg.type} onClose={() => props.setErrorMsg('')} dismissible> {props.errorMsg.msg} </Alert>}
                                     <NavLink to="/admin/addSurvey"><Button type="submit" size="lg" variant="success" className="fixed-right-bottom" onClick={() => setCompiling(true)}>&#43;</Button></NavLink>
+                                    <AdminPageContent surveys={surveys} userInfo={props.userInfo}/>
                                 </Container>
                             </>}
                     </Route>

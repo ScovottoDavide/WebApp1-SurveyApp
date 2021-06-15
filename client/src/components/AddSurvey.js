@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Container, Row, Col, Form, Button, InputGroup } from 'react-bootstrap';
+import { Container, Row, Col, Form, Button, InputGroup, Alert } from 'react-bootstrap';
 import { PlusCircle, Arrow90degDown, Arrow90degUp, XSquare, Trash } from 'react-bootstrap-icons'
 import { Redirect } from 'react-router';
 
@@ -25,9 +25,11 @@ function AddSurvey(props) {
         questions.forEach(q => {
             if (q.titleQ === undefined)
                 newErrors.titleQ = "Cannot be blank";
-            q.options.forEach(o => {
-                if (o.titleO === '') newErrors.titleO = "Cannot be blank";
-            })
+            if (q.type === 1) {
+                q.options.forEach(o => {
+                    if (o.titleO === '') newErrors.titleO = "Cannot be blank";
+                })
+            }
         })
         return newErrors;
     }
@@ -38,7 +40,7 @@ function AddSurvey(props) {
         if (Object.keys(errs).length > 0)
             setErrors(errs);
         else {
-            const newSurvey = { id: props.surveys.length + 1, title: titleSurvey, questions: questions };
+            const newSurvey = { id: props.surveys.length + 1, title: titleSurvey, answers: 0, questions: questions };
             props.surveyAdder(newSurvey);
             props.setCompiling(false);
         }
@@ -214,18 +216,23 @@ function QuestionRow(props) {
 }
 
 function MultipleChoiceRow(props) {
+    const [errorMsg, setErrorMsg] = useState('');
+
     const AddOption = () => {
-        props.setQuestions((oldQuestions) => {
-            return oldQuestions.map((q) => {
-                if (q.id === props.question.id) {
-                    const opt = q.options;
-                    return {
-                        ...q, options: [...opt, { id: opt.length, titleO: "", idQ: props.questions.length }]
+        if (props.question.options.length < 10) {
+            props.setQuestions((oldQuestions) => {
+                return oldQuestions.map((q) => {
+                    if (q.id === props.question.id) {
+                        const opt = q.options;
+                        return {
+                            ...q, options: [...opt, { id: opt.length, titleO: "", idQ: props.questions.length }]
+                        }
                     }
-                }
-                else return q;
-            })
-        });
+                    else return q;
+                })
+            });
+        }
+        else setErrorMsg("Cannot have more than 10 options");
     }
 
     const setTitleO = (value) => {
@@ -270,9 +277,14 @@ function MultipleChoiceRow(props) {
                 </InputGroup>
             </Col>
             {props.option.id === props.question.options.length - 1 ?
-                <Col sm={1}><Button className="mt-1" size="sm" variant="outline-success" onClick={AddOption}> <PlusCircle /> </Button> </Col>
+                <Col sm={1}>
+                    <Button className="mt-1" size="sm" variant="outline-success" onClick={AddOption}> 
+                        <PlusCircle /> 
+                    </Button> 
+                </Col>
                 :
                 <Col sm={1}><Button className="mt-1" size="sm" variant="outline-warning" onClick={() => { deleteOption(props.option.id) }}> <XSquare /> </Button> </Col>}
+                {errorMsg && <Alert className="alert small" variant="warning" size="sm" onClick={() => setErrorMsg('')} dismissible>{errorMsg}</Alert>}
         </Form.Row>
     );
 }
