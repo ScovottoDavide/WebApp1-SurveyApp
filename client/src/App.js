@@ -7,7 +7,10 @@ import { Redirect, Route, Switch } from 'react-router'
 import LoginForm from './LoginForm';
 import UserPage from './components/UserPage';
 import AdminPage from './components/AdminPage'
-import API from './API'
+import AddSurvey from './components/AddSurvey';
+import SurveyNavbar from './components/Navbar';
+import UserAnswer from './components/UserAnswer';
+import API from './API';
 
 function App() {
   const [errorMsg, setErrorMsg] = useState({});
@@ -15,6 +18,11 @@ function App() {
   const [mounting, setMounting] = useState(true);
   const [userInfo, setUserInfo] = useState({});
   const [allSurveys, setAllSurveys] = useState([]);
+  const [inFormQuestions, setInFormQuestions] = useState([]);
+  const [surveys, setSurveys] = useState([]);
+  const [toAnswer, setToAnswer] = useState();
+  const [loadingA, setLoadingA] = useState(true);
+  const [dirty, setDirty] = useState(true);
 
   useEffect(() => {
     const checkAuth = () => {
@@ -35,17 +43,56 @@ function App() {
       const list = await API.RetrieveAllSurveys();
       setAllSurveys(list);
     }
-    getAllSurveys().then(() => {
-    }).catch(err => {
-      console.error(err);
-    });;
-  }, [allSurveys.length]);
+    if (!loggedIn && dirty) {
+      getAllSurveys().then(() => {
+        setDirty(false);
+      }).catch(err => {
+        console.error(err);
+      });;
+    }
+  }, [allSurveys.length, dirty]);
+
+  useEffect(() => {
+    const getSurveys = async () => {
+      if (loggedIn) {
+        const list = await API.RetrieveSurveyList();
+        setSurveys(list);
+      }
+    }
+
+    if (loggedIn && dirty) {
+      getSurveys().then(() => {
+        setLoadingA(false);
+        setDirty(false);
+      }).catch(err => {
+        console.error(err);
+      });;
+    }
+  }, [surveys.length, loggedIn, dirty]);
+
+  useEffect(() => {
+    const getQuestions = async () => {
+      if (loggedIn) {
+        const list = await API.RetrieveQuestionsList();
+        setInFormQuestions(list);
+      }
+    }
+
+    if (loggedIn && dirty) {
+      getQuestions().then(() => {
+        setDirty(false);
+      }).catch(err => {
+        console.error(err);
+      });;
+    }
+  }, [surveys.length, inFormQuestions.length, loggedIn, dirty]);
 
   const doLogin = async (credentials) => {
     try {
       const user = await API.login(credentials);
       setUserInfo({ email: user.username, name: user.name });
       setLoggedIn(true);
+      setDirty(true);
       setErrorMsg({ msg: `Welcome ${user.name} !`, type: 'success' });
     } catch (err) {
       throw err;
@@ -63,6 +110,14 @@ function App() {
     }
   }
 
+  /* DB saving survey */
+  const surveyAdder = (survey) => {
+    setSurveys(ss => [...ss, survey]);
+
+    API.AddSurveyDB(survey)
+      .then(()=>setDirty(true)).catch(err => console.log(err));
+  }
+
   return (
     <Router>
       <Container fluid>
@@ -72,10 +127,31 @@ function App() {
               {mounting ? '' : <>{loggedIn ? <Redirect to="/admin" /> : <Row className="login"><LoginForm login={doLogin} /></Row>}</>}
             </ Route>
             <Route exact path="/admin">
-              {mounting ? '' : <>{loggedIn ? <AdminPage loggedIn={loggedIn} doLogout={doLogout} userInfo={userInfo} errorMsg={errorMsg} setErrorMsg={setErrorMsg} /> : <Redirect to="/user" />}</>}
+              {mounting ? ''
+                :
+                <>
+                  {loggedIn ?
+                    <AdminPage loggedIn={loggedIn} doLogout={doLogout} userInfo={userInfo} errorMsg={errorMsg} setErrorMsg={setErrorMsg}
+                      inFormQuestions={inFormQuestions} setInFormQuestions={setInFormQuestions} surveys={surveys} loadingA={loadingA} />
+                    :
+                    <Redirect to="/user" />}
+                </>}
+            </Route>
+            <Route exact path="/admin/addSurvey">
+              {mounting ? '' : <>{loggedIn ?
+                <>
+                  <SurveyNavbar doLogout={doLogout} userInfo={userInfo} loggedIn={loggedIn} />
+                  <AddSurvey surveyAdder={surveyAdder} surveys={surveys} inFormQuestions={inFormQuestions} setInFormQuestions={setInFormQuestions} loggedIn={loggedIn} />
+                </>
+                :
+                <Redirect to="/user" />}</>}
             </Route>
             <Route exact path="/user">
-              {mounting ? '' : <>{loggedIn ? <Redirect to="/admin" /> : <UserPage loggedIn={loggedIn} doLogout={doLogout} userInfo={userInfo} allSurveys={allSurveys}/>}</>}
+              {mounting ? '' : <>{loggedIn ? <Redirect to="/admin" /> : <UserPage loggedIn={loggedIn} doLogout={doLogout} userInfo={userInfo} allSurveys={allSurveys} setToAnswer={setToAnswer} />}</>}
+            </Route>
+            <Route exact path="/user/answer">
+              <SurveyNavbar doLogout={doLogout} userInfo={userInfo} loggedIn={loggedIn} />
+              <UserAnswer toAnswer={toAnswer} />
             </Route>
             <Route path="/">
               {mounting ? '' : <>{loggedIn ? <Redirect to="/admin" /> : <Redirect to="/user" />}</>}

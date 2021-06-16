@@ -53,7 +53,6 @@ exports.listSurveys = (userid) => {
             }
             const questions = await this.listQuestions();
             const surveys = rows.map(r => ({ id: r.id, title: r.title, answers: r.answers, userId: r.userId, questions: questions.filter(q => q.idS === r.id)}));
-            console.log(surveys);
             resolve(surveys);
         })
     })
@@ -69,7 +68,7 @@ exports.listQuestions = () => {
             }
 
             const opts = await this.listOptions();
-            const questions = rows.map(r => ({ id: r.idQ, titleQ: r.titleQ, type: r.type, options: opts.filter(o => o.idQ === r.idQ) }))
+            const questions = rows.map(r => ({ id: r.idQ, titleQ: r.titleQ, type: r.type, idS: r.idS, min: r.min, max: r.max, options: opts.filter(o => o.idQ === r.idQ) }))
             resolve(questions);
         })
     })
@@ -98,7 +97,7 @@ exports.listAllSurveys = () => {
                 return;
             }
             const questions = await this.listQuestions();
-            const surveys = rows.map((r) => ({ id: r.id, title: r.title, answers: r.answers, userId: r.userId, questions: questions}));
+            const surveys = rows.map((r) => ({ id: r.id, title: r.title, answers: r.answers, userId: r.userId, questions: questions.filter(q => q.idS === r.id)}));
             resolve(surveys);
         })
     })

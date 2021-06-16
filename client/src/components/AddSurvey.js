@@ -7,6 +7,7 @@ function AddSurvey(props) {
     const [titleSurvey, setTitleSurvey] = useState("");
     const [questions, setQuestions] = useState([]);
     const [errors, setErrors] = useState({});
+    const [compiling, setCompiling] = useState(true);
 
     const setTitle = (value) => {
         setTitleSurvey(value);
@@ -42,7 +43,7 @@ function AddSurvey(props) {
         else {
             const newSurvey = { id: props.surveys.length + 1, title: titleSurvey, answers: 0, questions: questions };
             props.surveyAdder(newSurvey);
-            props.setCompiling(false);
+            setCompiling(false);
         }
     }
 
@@ -65,9 +66,9 @@ function AddSurvey(props) {
                                 <Button className="mb-2" size="md" variant="outline-ligth" onClick={() => AddQuestion()}> <PlusCircle /> </Button></h5>
                             </Form.Row>
                             {questions.map((q) => <QuestionRow key={q.id} question={q} questions={questions} setQuestions={setQuestions} errors={errors} />)}
-                            <Button type="submit" variant="danger" onClick={() => props.setCompiling(false)}>Cancel</Button>
+                            <Button type="submit" variant="danger" onClick={() => setCompiling(false)}>Cancel</Button>
                             <Button className="ml-3" type="submit" variant="success" onClick={(event) => handleSubmit(event)}>Publish</Button>
-                            {props.compiling ? '' : <Redirect to="/admin" />}
+                            {!compiling && <Redirect to="/admin" />}
                         </Form.Group>
                     </Form>
                 </Col>

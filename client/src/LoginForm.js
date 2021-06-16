@@ -45,7 +45,7 @@ function LoginForm(props) {
         <Form.Control type='password' value={password} onChange={ev => setPassword(ev.target.value)} />
       </Form.Group>
       <ButtonGroup className="buttons">
-        <Button className="mr-3" variant="danger" onClick={setCancel}>Cancel</Button>
+        <Button className="mr-3" variant="danger" onClick={handleCancel}>Cancel</Button>
         <Button onClick={handleSubmit}>Login</Button>
       </ButtonGroup>
       {cancel ? <Redirect to="/user" /> : ''}
