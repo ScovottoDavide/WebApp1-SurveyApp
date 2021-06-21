@@ -114,13 +114,32 @@ app.post('/api/addSurvey', isLoggedIn, async (req, res) => {
   }
 })
 
+//create a new answer
+app.post('/api/AddAnswer', async (req, res) => {
+  const newAnswer = {
+    idS: req.body.idS,
+    name: req.body.name,
+    answers: req.body.answers,
+  };
+  try {
+    const id1 = await dao.addAnswer(newAnswer);
+    newAnswer.answers.forEach(async answer => {
+      await dao.addAnswerData(answer, id1);
+    })
+    await dao.UpdateNumAnswers(newAnswer.idS);
+    res.status(201).end();
+  } catch (err) {
+    res.status(503).json({ error: `Database error during creation of answer from ${newAnswer.name}` });
+  }
+})
+
 // Get the list of all surveys per user 
 app.get('/api/surveys', isLoggedIn, async (req, res) => {
   try {
     setTimeout(async () => {
       const surveys = await dao.listSurveys(req.user.id);
       res.json(surveys);
-    }, 2000);
+    }, 1000);
   } catch (err) {
     res.status(500).end();
   }
@@ -129,8 +148,15 @@ app.get('/api/surveys', isLoggedIn, async (req, res) => {
 // Get the list of all surveys of all users
 app.get('/api/surveys/all', async (req, res) => {
   try {
-    const all = await dao.listAllSurveys();
-    res.json(all);
+    setTimeout(async () => {
+      const all = await dao.listAllSurveys();
+      for (let i = 0; i < all.length; i++) {
+        var element = all[i];
+        const author = await dao.getAuthor(element.userId);
+        all[i].author = author;
+      }
+      res.json(all);
+    }, 1000)
   } catch (err) {
     res.status(503).end();
   }

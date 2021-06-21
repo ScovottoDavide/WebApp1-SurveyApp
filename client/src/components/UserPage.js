@@ -1,9 +1,9 @@
 import SidebarSurvey from "./Sidebar";
 import SurveyNavbar from './Navbar';
-import { Table, Button } from 'react-bootstrap';
+import { Table, Button, Form, Spinner } from 'react-bootstrap';
 import { CardChecklist } from 'react-bootstrap-icons'
-import {Container} from 'react-bootstrap';
-import {NavLink} from 'react-router-dom'
+import { Container } from 'react-bootstrap';
+import { NavLink } from 'react-router-dom'
 
 function UserPage(props) {
     return (
@@ -11,7 +11,11 @@ function UserPage(props) {
             <SurveyNavbar doLogout={props.doLogout} userInfo={props.userInfo} loggedIn={props.loggedIn} />
             <SidebarSurvey loggedIn={props.loggedIn} />
             <Container className="col-sm-8 col-12 below-nav">
-                <UserPageContent allSurveys={props.allSurveys} userInfo={props.userInfo} setToAnswer={props.setToAnswer}/>
+                {
+                    props.loadingU ? <span className="col-sm-8 col-12 below-nav spinner"><Spinner animation="border" /></span>
+                        :
+                        <UserPageContent allSurveys={props.allSurveys} userInfo={props.userInfo} setToAnswer={props.setToAnswer} />
+                }
             </Container>
 
         </>
@@ -21,19 +25,19 @@ function UserPage(props) {
 function UserPageContent(props) {
     return (
         <>
-            <h3 className="mb-4 mt-3"><i>All published surveys </i></h3>
+            <Form.Text className="mb-4 mt-3" as="h3"><i>All published surveys </i></Form.Text>
             <Table striped bordered >
                 <thead>
                     <tr>
                         <th>N°</th>
                         <th className="col col-4">Title</th>
-                        <th className="col col-3">Number of answers</th>
+                        <th className="col col-3">Author</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {
-                        props.allSurveys.map((s) => <SurveyRow key={s.id} survey={s} surveys={props.allSurveys} setToAnswer={props.setToAnswer}/>)
+                        props.allSurveys.map((s) => <SurveyRow key={s.id} survey={s} surveys={props.allSurveys} setToAnswer={props.setToAnswer} />)
                     }
                 </tbody>
             </Table>
@@ -42,7 +46,7 @@ function UserPageContent(props) {
 }
 
 function SurveyRow(props) {
-    return <tr><SurveyRowData survey={props.survey} surveys={props.surveys} /><SurveyRowControl survey={props.survey} setToAnswer={props.setToAnswer}/></tr>
+    return <tr><SurveyRowData survey={props.survey} surveys={props.surveys} /><SurveyRowControl survey={props.survey} setToAnswer={props.setToAnswer} /></tr>
 }
 
 function SurveyRowData(props) {
@@ -50,7 +54,7 @@ function SurveyRowData(props) {
         <>
             <td>{props.surveys.indexOf(props.survey) + 1}</td>
             <td>{props.survey.title}</td>
-            <td>{props.survey.answers}</td>
+            <td>{props.survey.author}</td>
         </>
     )
 }
@@ -61,8 +65,8 @@ function SurveyRowControl(props) {
         <td>
             <NavLink to={{
                 pathname: "/user/answer",
-                state: {survey: props.survey}
-                }}><Button type="submit" size="sm" variant="outline-success" onClick={() => props.setToAnswer(props.survey)}><CardChecklist size={20} /></Button></NavLink>
+                state: { survey: props.survey }
+            }}><Button type="submit" size="sm" variant="outline-success" ><CardChecklist size={20} /></Button></NavLink>
         </td>
     )
 }

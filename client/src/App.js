@@ -20,8 +20,8 @@ function App() {
   const [allSurveys, setAllSurveys] = useState([]);
   const [inFormQuestions, setInFormQuestions] = useState([]);
   const [surveys, setSurveys] = useState([]);
-  const [toAnswer, setToAnswer] = useState();
   const [loadingA, setLoadingA] = useState(true);
+  const [loadingU, setLoadingU] = useState(true);
   const [dirty, setDirty] = useState(true);
 
   useEffect(() => {
@@ -45,12 +45,13 @@ function App() {
     }
     if (!loggedIn && dirty) {
       getAllSurveys().then(() => {
+        setLoadingU(false);
         setDirty(false);
       }).catch(err => {
         console.error(err);
       });;
     }
-  }, [allSurveys.length, dirty]);
+  }, [allSurveys.length, dirty, loggedIn]);
 
   useEffect(() => {
     const getSurveys = async () => {
@@ -112,6 +113,7 @@ function App() {
 
   /* DB saving survey */
   const surveyAdder = (survey) => {
+    survey.status = 'added';
     setSurveys(ss => [...ss, survey]);
 
     API.AddSurveyDB(survey)
@@ -147,11 +149,11 @@ function App() {
                 <Redirect to="/user" />}</>}
             </Route>
             <Route exact path="/user">
-              {mounting ? '' : <>{loggedIn ? <Redirect to="/admin" /> : <UserPage loggedIn={loggedIn} doLogout={doLogout} userInfo={userInfo} allSurveys={allSurveys} setToAnswer={setToAnswer} />}</>}
+              {mounting ? '' : <>{loggedIn ? <Redirect to="/admin" /> : <UserPage loggedIn={loggedIn} doLogout={doLogout} userInfo={userInfo} allSurveys={allSurveys} loadingU={loadingU}/>}</>}
             </Route>
             <Route exact path="/user/answer">
               <SurveyNavbar doLogout={doLogout} userInfo={userInfo} loggedIn={loggedIn} />
-              <UserAnswer toAnswer={toAnswer} />
+              <UserAnswer />
             </Route>
             <Route path="/">
               {mounting ? '' : <>{loggedIn ? <Redirect to="/admin" /> : <Redirect to="/user" />}</>}

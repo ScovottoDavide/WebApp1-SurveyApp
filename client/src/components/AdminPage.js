@@ -2,7 +2,7 @@ import SidebarSurvey from "./Sidebar";
 import SurveyNavbar from './Navbar';
 import { useState } from 'react';
 import { EyeFill } from 'react-bootstrap-icons'
-import { Container, Alert, Button, Table, Spinner } from 'react-bootstrap';
+import { Container, Alert, Button, Table, Spinner, Form } from 'react-bootstrap';
 import { NavLink } from 'react-router-dom';
 
 function AdminPage(props) {
@@ -28,7 +28,7 @@ function AdminPage(props) {
 function AdminPageContent(props) {
     return (
         <>
-            <h3 className="mb-4 mt-3"><i>{props.userInfo.name}'s published surveys </i></h3>
+            <Form.Text className="mb-4 mt-3" as="h3"><i>{props.userInfo.name}'s published surveys </i></Form.Text>
             <Table striped bordered >
                 <thead>
                     <tr>
@@ -49,7 +49,15 @@ function AdminPageContent(props) {
 }
 
 function SurveyRow(props) {
-    return <tr><SurveyRowData survey={props.survey} surveys={props.surveys} /><SurveyRowControl survey={props.survey} /></tr>
+    let statusClass = null;
+    switch (props.survey.status) {
+        case 'added':
+            statusClass = 'table-success';
+            break;
+        default:
+            break;
+    }
+    return <tr className={statusClass}><SurveyRowData survey={props.survey} surveys={props.surveys} /><SurveyRowControl survey={props.survey} /></tr>
 }
 
 function SurveyRowData(props) {

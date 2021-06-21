@@ -52,7 +52,7 @@ exports.listSurveys = (userid) => {
                 return;
             }
             const questions = await this.listQuestions();
-            const surveys = rows.map(r => ({ id: r.id, title: r.title, answers: r.answers, userId: r.userId, questions: questions.filter(q => q.idS === r.id)}));
+            const surveys = rows.map(r => ({ id: r.id, title: r.title, answers: r.answers, userId: r.userId, questions: questions.filter(q => q.idS === r.id) }));
             resolve(surveys);
         })
     })
@@ -92,13 +92,67 @@ exports.listAllSurveys = () => {
     return new Promise((resolve, reject) => {
         const sql = 'SELECT * FROM surveys';
         db.all(sql, [], async (err, rows) => {
-            if(err){
+            if (err) {
                 reject(err);
                 return;
             }
             const questions = await this.listQuestions();
-            const surveys = rows.map((r) => ({ id: r.id, title: r.title, answers: r.answers, userId: r.userId, questions: questions.filter(q => q.idS === r.id)}));
+            const surveys = rows.map((r) => ({ id: r.id, title: r.title, answers: r.answers, userId: r.userId, questions: questions.filter(q => q.idS === r.id) }));
             resolve(surveys);
         })
+    })
+}
+
+exports.getAuthor = (userId) => {
+    return new Promise((resolve, reject) => {
+        const sql = 'SELECT name FROM users WHERE id = ?';
+        db.get(sql, [userId], function (err, row){
+            if(err){
+                reject(err);
+                return;
+            }
+            const name = row.name;
+            resolve(name);
+        })
+    })
+}
+
+exports.addAnswer = (answers) => {
+    return new Promise((resolve, reject) => {
+        const sql = 'INSERT INTO answers(idS, name) VALUES(?, ?)';
+        db.run(sql, [answers.idS, answers.name], function (err) {
+            if (err) {
+                reject(err);
+                return;
+            }
+            resolve(this.lastID);
+        });
+    })
+}
+
+exports.addAnswerData = (answer, idA) => {
+    return new Promise((resolve, reject) => {
+        const sql = 'INSERT INTO data_answers(idQ, data, idA) VALUES(?, ?, ?)';
+        db.run(sql, [answer.idQ, answer.data.toString(), idA], function (err) {
+            if (err) {
+                console.log(err);
+                reject(err);
+                return;
+            }
+            resolve(this.lastID);
+        });
+    })
+}
+
+exports.UpdateNumAnswers = (idS) => {
+    return new Promise((resolve, reject) => {
+        const sql = 'UPDATE surveys SET answers=answers+1 WHERE id=?';
+            db.run(sql, [idS], function(err){
+                if(err){
+                    reject(err);
+                    return;
+                }
+            })
+            resolve(this.lastID);
     })
 }

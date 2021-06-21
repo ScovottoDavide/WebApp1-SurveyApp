@@ -9,6 +9,7 @@ function AddSurvey(props) {
     const [errors, setErrors] = useState({});
     const [compiling, setCompiling] = useState(true);
 
+    console.log(questions);
     const setTitle = (value) => {
         setTitleSurvey(value);
     }
@@ -23,15 +24,18 @@ function AddSurvey(props) {
         const newErrors = {};
         if (titleSurvey === '')
             newErrors.titleS = "Cannot be blank";
-        questions.forEach(q => {
-            if (q.titleQ === undefined)
-                newErrors.titleQ = "Cannot be blank";
-            if (q.type === 1) {
-                q.options.forEach(o => {
-                    if (o.titleO === '') newErrors.titleO = "Cannot be blank";
-                })
-            }
-        })
+        if (questions.length !== 0) {
+            questions.forEach(q => {
+                if (q.titleQ === undefined || q.titleQ === "")
+                    newErrors.titleQ = "Cannot be blank";
+                if (q.type === 1) {
+                    q.options.forEach(o => {
+                        if (o.titleO === '') newErrors.titleO = "Cannot be blank";
+                    })
+                }
+            })
+        }
+        else newErrors.noQs = "Insert at least one question!";
         return newErrors;
     }
 
@@ -62,8 +66,13 @@ function AddSurvey(props) {
                             </Form.Group>
                         </Col>
                         <Form.Group className="mb-3 mt-5" controlId="formQuestion">
-                            <Form.Row><h5 className="ml-3"> Click to add a new Question
-                                <Button className="mb-2" size="md" variant="outline-ligth" onClick={() => AddQuestion()}> <PlusCircle /> </Button></h5>
+                            <Form.Row>
+                                <h5 className="ml-3"> Click to add a new Question
+                                    <Button className="mb-2" size="md" variant="outline-ligth" onClick={() => AddQuestion()}> <PlusCircle /> </Button>
+                                    {questions.length===0 ? <><Form.Control type="input" isInvalid={!!errors.noQs} hidden />
+                                    <Form.Control.Feedback type="invalid">{errors.noQs}</Form.Control.Feedback> </>: ''}
+                                </h5>
+
                             </Form.Row>
                             {questions.map((q) => <QuestionRow key={q.id} question={q} questions={questions} setQuestions={setQuestions} errors={errors} />)}
                             <Button type="submit" variant="danger" onClick={() => setCompiling(false)}>Cancel</Button>
@@ -97,15 +106,28 @@ function QuestionRow(props) {
     }
 
     const setTitle = (value) => {
-        props.setQuestions((oldQuestions) => {
-            return oldQuestions.map((q) => {
-                if (q.id === props.question.id)
-                    return {
-                        ...q, titleQ: value
-                    };
-                else return q;
-            })
-        });
+        if (value) {
+            props.setQuestions((oldQuestions) => {
+                return oldQuestions.map((q) => {
+                    if (q.id === props.question.id)
+                        return {
+                            ...q, titleQ: value
+                        };
+                    else return q;
+                })
+            });
+        }
+        else {
+            props.setQuestions((oldQuestions) => {
+                return oldQuestions.map((q) => {
+                    if (q.id === props.question.id)
+                        return {
+                            ...q, titleQ: ''
+                        };
+                    else return q;
+                })
+            });
+        }
     }
 
     const deleteQuestion = (id) => {
@@ -279,13 +301,13 @@ function MultipleChoiceRow(props) {
             </Col>
             {props.option.id === props.question.options.length - 1 ?
                 <Col sm={1}>
-                    <Button className="mt-1" size="sm" variant="outline-success" onClick={AddOption}> 
-                        <PlusCircle /> 
-                    </Button> 
+                    <Button className="mt-1" size="sm" variant="outline-success" onClick={AddOption}>
+                        <PlusCircle />
+                    </Button>
                 </Col>
                 :
                 <Col sm={1}><Button className="mt-1" size="sm" variant="outline-warning" onClick={() => { deleteOption(props.option.id) }}> <XSquare /> </Button> </Col>}
-                {errorMsg && <Alert className="alert small" variant="warning" size="sm" onClick={() => setErrorMsg('')} dismissible>{errorMsg}</Alert>}
+            {errorMsg && <Alert className="alert small" variant="warning" size="sm" onClick={() => setErrorMsg('')} dismissible>{errorMsg}</Alert>}
         </Form.Row>
     );
 }
