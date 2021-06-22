@@ -6,7 +6,7 @@ import API from '../API'
 function UserAnswer(props) {
 
     const location = useLocation();
-    const [toAnswer, setToAnswer] = useState(location.state ? location.state.survey : {});
+    const toAnswer = location.state ? location.state.survey : {};
     const [compiled, setCompiled] = useState({ idS: toAnswer.id, name: '', answers: [] });
     const [submitted, setSubmitted] = useState(false);
     const [loadingU, setLoadingU] = useState(false);
@@ -89,7 +89,7 @@ function UserAnswer(props) {
                             }
                             <Form.Text as="mark" className="mt-3 mb-3 text-left text-size"> Note: questions with the (*) mark are mandatory !</Form.Text>
                             <Button type="submit" variant="danger" >Cancel</Button>
-                            <Button className="ml-3" type="submit" variant="success" onClick={(event) => handleSubmit(event)}>Answer</Button>
+                            <Button className="ml-3" type="submit" variant="success" onClick={(event) => handleSubmit(event)}>Submit Answer</Button>
                             {loadingU ? <Spinner className="ml-4" animation="border" /> : <>{submitted ? <Redirect to="/user" /> : ''}</>}
                         </Form.Group>
                     </Form>

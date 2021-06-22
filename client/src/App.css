@@ -72,3 +72,16 @@
   font-size: 20px;
   color: red;
 }
+
+.fixed-left-bottom {
+  position: fixed;
+  left: 2%;
+  top: 92%;
+  z-index: 1030;
+  margin: 0 1.5rem 1.5rem 0;
+}
+
+.backNav{
+  background-color: whitesmoke;
+  
+}

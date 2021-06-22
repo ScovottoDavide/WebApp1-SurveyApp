@@ -1,13 +1,12 @@
 import { useState } from 'react';
 import { Container, Row, Col, Form, Button, InputGroup, Alert } from 'react-bootstrap';
 import { PlusCircle, Arrow90degDown, Arrow90degUp, XSquare, Trash } from 'react-bootstrap-icons'
-import { Redirect } from 'react-router';
+import { NavLink } from 'react-router-dom'
 
 function AddSurvey(props) {
     const [titleSurvey, setTitleSurvey] = useState("");
     const [questions, setQuestions] = useState([]);
     const [errors, setErrors] = useState({});
-    const [compiling, setCompiling] = useState(true);
 
     console.log(questions);
     const setTitle = (value) => {
@@ -47,7 +46,8 @@ function AddSurvey(props) {
         else {
             const newSurvey = { id: props.surveys.length + 1, title: titleSurvey, answers: 0, questions: questions };
             props.surveyAdder(newSurvey);
-            setCompiling(false);
+            props.setDirty(true);
+            props.setLoadingA(true);
         }
     }
 
@@ -75,9 +75,8 @@ function AddSurvey(props) {
 
                             </Form.Row>
                             {questions.map((q) => <QuestionRow key={q.id} question={q} questions={questions} setQuestions={setQuestions} errors={errors} />)}
-                            <Button type="submit" variant="danger" onClick={() => setCompiling(false)}>Cancel</Button>
-                            <Button className="ml-3" type="submit" variant="success" onClick={(event) => handleSubmit(event)}>Publish</Button>
-                            {!compiling && <Redirect to="/admin" />}
+                            <NavLink to="/admin"><Button type="submit" variant="danger"  onClick={() => {props.setDirty(true);props.setLoadingA(true)}}>Cancel</Button></NavLink>
+                            <NavLink to="/admin"><Button className="ml-3" type="submit" variant="success" onClick={(event) => handleSubmit(event)}>Publish</Button></NavLink>
                         </Form.Group>
                     </Form>
                 </Col>

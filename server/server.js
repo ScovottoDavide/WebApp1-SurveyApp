@@ -2,6 +2,7 @@
 const express = require('express');
 const morgan = require('morgan');
 const passport = require('passport');
+const { check, validationResult } = require("express-validator");
 const LocalStrategy = require('passport-local').Strategy;
 const session = require('express-session');
 const dao = require('./dao');
@@ -90,7 +91,16 @@ app.post('/api/logout', (req, res) => {
 /* SURVEY DB API's */
 
 //create a new survey
-app.post('/api/addSurvey', isLoggedIn, async (req, res) => {
+app.post('/api/addSurvey',[
+  check('id').isInt({min: 0}),
+  check('title').notEmpty(),
+  check('answers').isInt({min: 0}),
+  check('user').isInt({min: 1}),
+  check('questions').isArray({min: 1}) 
+], isLoggedIn, async (req, res) => {
+  const errors = validationResult(req);
+  if(!errors.isEmpty())
+    return res.status(400).json({ errors: errors.array() })
   const newSurvey = {
     id: req.body.id,
     title: req.body.title,
@@ -115,7 +125,14 @@ app.post('/api/addSurvey', isLoggedIn, async (req, res) => {
 })
 
 //create a new answer
-app.post('/api/AddAnswer', async (req, res) => {
+app.post('/api/AddAnswer', [
+  check('idS').isInt({min: 1}),
+  check('name').notEmpty(),
+  check('answers').isArray()
+], async (req, res) => {
+  const errors = validationResult(req);
+  if(!errors.isEmpty())
+    return res.status(400).json({ errors: errors.array() })
   const newAnswer = {
     idS: req.body.idS,
     name: req.body.name,

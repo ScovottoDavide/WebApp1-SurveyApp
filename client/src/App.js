@@ -65,7 +65,6 @@ function App() {
 
     if (loggedIn && dirty) {
       getSurveys().then(() => {
-        setLoadingA(false);
         setDirty(false);
       }).catch(err => {
         setErrorMsg({msg: "Impossible to load the list of your surveys! Please, try again later...", type: "danger"});
@@ -100,8 +99,10 @@ function App() {
 
     if(loggedIn && dirty){
       getAnswers().then(() => {
+        setLoadingA(false);
         setDirty(false);
       }).catch(err => {
+        setLoadingA(true);
         setErrorMsg({msg: "Impossible to load answers! Please, try again later...", type: "danger"});
       });;
     }
@@ -113,7 +114,8 @@ function App() {
       setUserInfo({ email: user.username, name: user.name });
       setLoggedIn(true);
       setDirty(true);
-      setErrorMsg({ msg: `Welcome ${user.name} !`, type: 'success' });
+      setLoadingA(true);
+      setErrorMsg({ msg: `Welcome back ${user.name} !`, type: 'success' });
     } catch (err) {
       throw err;
     }
@@ -123,7 +125,11 @@ function App() {
     try {
       await API.logout();
       setLoggedIn(false);
+      setDirty(true);
       setUserInfo({});
+      setSurveys([]);
+      setLoadingU(true);
+      setErrorMsg({msg: '', type: ''})
     }
     catch (err) {
       throw err;
@@ -162,13 +168,14 @@ function App() {
               {mounting ? '' : <>{loggedIn ?
                 <>
                   <SurveyNavbar doLogout={doLogout} userInfo={userInfo} loggedIn={loggedIn} />
-                  <AddSurvey surveyAdder={surveyAdder} surveys={surveys} inFormQuestions={inFormQuestions} setInFormQuestions={setInFormQuestions} loggedIn={loggedIn} errorMsg={errorMsg} setErrorMsg={setErrorMsg}/>
+                  <AddSurvey surveyAdder={surveyAdder} surveys={surveys} inFormQuestions={inFormQuestions} setInFormQuestions={setInFormQuestions} 
+                      loggedIn={loggedIn} errorMsg={errorMsg} setErrorMsg={setErrorMsg} setDirty={setDirty} setLoadingA={setLoadingA}/>
                 </>
                 :
                 <Redirect to="/user" />}</>}
             </Route>
             <Route exact path="/admin/readAnswers">
-                <AdminRead doLogout={doLogout} userInfo={userInfo} loggedIn={loggedIn}/>
+                <AdminRead doLogout={doLogout} userInfo={userInfo} loggedIn={loggedIn} setDirty={setDirty} setLoadingA={setLoadingA}/>
             </Route>
             <Route exact path="/user">
               {mounting ? '' :
