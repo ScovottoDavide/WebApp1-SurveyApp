@@ -10,6 +10,7 @@ import AdminPage from './components/AdminPage'
 import AddSurvey from './components/AddSurvey';
 import SurveyNavbar from './components/Navbar';
 import UserAnswer from './components/UserAnswer';
+import AdminRead from './components/AdminRead';
 import API from './API';
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
   const [loadingA, setLoadingA] = useState(true);
   const [loadingU, setLoadingU] = useState(true);
   const [dirty, setDirty] = useState(true);
+  const [answers, setAnswers] = useState([]);
 
   useEffect(() => {
     const checkAuth = () => {
@@ -32,7 +34,7 @@ function App() {
         setMounting(false);
       }).catch((err) => {
         setMounting(false);
-        console.log(err.error);
+        console.log(err);
       });
     };
     checkAuth();
@@ -48,7 +50,7 @@ function App() {
         setLoadingU(false);
         setDirty(false);
       }).catch(err => {
-        console.error(err);
+        setErrorMsg({msg: "Impossible to load the list of surveys! Please, try again later...", type: "danger"});
       });;
     }
   }, [allSurveys.length, dirty, loggedIn]);
@@ -66,7 +68,7 @@ function App() {
         setLoadingA(false);
         setDirty(false);
       }).catch(err => {
-        console.error(err);
+        setErrorMsg({msg: "Impossible to load the list of your surveys! Please, try again later...", type: "danger"});
       });;
     }
   }, [surveys.length, loggedIn, dirty]);
@@ -83,10 +85,27 @@ function App() {
       getQuestions().then(() => {
         setDirty(false);
       }).catch(err => {
-        console.error(err);
+        setErrorMsg({msg: "Impossible to contact the server! Please, try again later...", type: "danger"});
       });;
     }
   }, [surveys.length, inFormQuestions.length, loggedIn, dirty]);
+
+  useEffect(() => {
+    const getAnswers = async () => {
+      if(loggedIn){
+        const list = await API.RetrieveAnswers();
+        setAnswers(list);
+      }
+    }
+
+    if(loggedIn && dirty){
+      getAnswers().then(() => {
+        setDirty(false);
+      }).catch(err => {
+        setErrorMsg({msg: "Impossible to load answers! Please, try again later...", type: "danger"});
+      });;
+    }
+  }, [answers.length, loggedIn, dirty])
 
   const doLogin = async (credentials) => {
     try {
@@ -117,7 +136,7 @@ function App() {
     setSurveys(ss => [...ss, survey]);
 
     API.AddSurveyDB(survey)
-      .then(()=>setDirty(true)).catch(err => console.log(err));
+      .then(() => setDirty(true)).catch(err => setErrorMsg({msg: "err.error", type: "danger"}));
   }
 
   return (
@@ -134,7 +153,7 @@ function App() {
                 <>
                   {loggedIn ?
                     <AdminPage loggedIn={loggedIn} doLogout={doLogout} userInfo={userInfo} errorMsg={errorMsg} setErrorMsg={setErrorMsg}
-                      inFormQuestions={inFormQuestions} setInFormQuestions={setInFormQuestions} surveys={surveys} loadingA={loadingA} />
+                      inFormQuestions={inFormQuestions} setInFormQuestions={setInFormQuestions} surveys={surveys} loadingA={loadingA} answers={answers}/>
                     :
                     <Redirect to="/user" />}
                 </>}
@@ -143,13 +162,20 @@ function App() {
               {mounting ? '' : <>{loggedIn ?
                 <>
                   <SurveyNavbar doLogout={doLogout} userInfo={userInfo} loggedIn={loggedIn} />
-                  <AddSurvey surveyAdder={surveyAdder} surveys={surveys} inFormQuestions={inFormQuestions} setInFormQuestions={setInFormQuestions} loggedIn={loggedIn} />
+                  <AddSurvey surveyAdder={surveyAdder} surveys={surveys} inFormQuestions={inFormQuestions} setInFormQuestions={setInFormQuestions} loggedIn={loggedIn} errorMsg={errorMsg} setErrorMsg={setErrorMsg}/>
                 </>
                 :
                 <Redirect to="/user" />}</>}
             </Route>
+            <Route exact path="/admin/readAnswers">
+                <AdminRead doLogout={doLogout} userInfo={userInfo} loggedIn={loggedIn}/>
+            </Route>
             <Route exact path="/user">
-              {mounting ? '' : <>{loggedIn ? <Redirect to="/admin" /> : <UserPage loggedIn={loggedIn} doLogout={doLogout} userInfo={userInfo} allSurveys={allSurveys} loadingU={loadingU}/>}</>}
+              {mounting ? '' :
+                <>{loggedIn ? <Redirect to="/admin" />
+                  :
+                  <UserPage loggedIn={loggedIn} doLogout={doLogout} userInfo={userInfo} allSurveys={allSurveys} loadingU={loadingU} errorMsg={errorMsg} setErrorMsg={setErrorMsg} />}
+                </>}
             </Route>
             <Route exact path="/user/answer">
               <SurveyNavbar doLogout={doLogout} userInfo={userInfo} loggedIn={loggedIn} />

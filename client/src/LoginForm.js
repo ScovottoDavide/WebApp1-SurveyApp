@@ -49,7 +49,7 @@ function LoginForm(props) {
         <Button onClick={handleSubmit}>Login</Button>
       </ButtonGroup>
       {cancel ? <Redirect to="/user" /> : ''}
-      {errorMessage ? <Alert className="mt-3" variant='danger'>{errorMessage}</Alert> : ''}
+      {errorMessage ? <Alert className="mt-5" variant='danger'>{errorMessage}</Alert> : ''}
     </Form>
   )
 }

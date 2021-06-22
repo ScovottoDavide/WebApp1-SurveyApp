@@ -133,7 +133,7 @@ app.post('/api/AddAnswer', async (req, res) => {
   }
 })
 
-// Get the list of all surveys per user 
+// Get the list of all surveys per admin 
 app.get('/api/surveys', isLoggedIn, async (req, res) => {
   try {
     setTimeout(async () => {
@@ -168,6 +168,16 @@ app.get('/api/surveys/questions', isLoggedIn, async (req, res) => {
     const questions = await dao.listQuestions();
     res.json(questions);
   } catch (err) {
+    res.status(500).end();
+  }
+})
+
+// Get the list of all answers
+app.get('/api/answers', isLoggedIn, async (req, res) => {
+  try{
+    const answers = await dao.getAnswers(req.user.id);
+    res.json(answers);
+  }catch (err){
     res.status(500).end();
   }
 })

@@ -40,19 +40,19 @@ async function logout() {
 }
 
 /* SURBEY DB API's */
-function AddSurveyDB(survey){
+function AddSurveyDB(survey) {
     // call POST /api/addSurvey
     return new Promise((resolve, reject) => {
-        const s = {id: survey.id, title: survey.title, answers: survey.answers, questions: survey.questions};
+        const s = { id: survey.id, title: survey.title, answers: survey.answers, questions: survey.questions };
         fetch('/api/addSurvey', {
-            method: 'POST', 
-            headers: {'Content-type': 'application/json'},
+            method: 'POST',
+            headers: { 'Content-type': 'application/json' },
             body: JSON.stringify(s),
         }).then((response) => {
-            if(response.ok)
+            if (response.ok)
                 resolve();
             else response.json().then(obj => reject(obj));
-        }).catch(err => reject({error: 'Comunication problems!'}))
+        }).catch(err => reject({ error: 'Comunication problems!' }))
     })
 }
 
@@ -61,7 +61,7 @@ async function RetrieveSurveyList() {
     const response = await fetch('/api/surveys');
     const list = await response.json();
     if (response.ok)
-        return list.map( l => ({id: l.id, title: l.title, answers: l.answers, userId: l.userId, questions: l.questions}));
+        return list.map(l => ({ id: l.id, title: l.title, answers: l.answers, userId: l.userId, questions: l.questions }));
     else throw list;
 }
 
@@ -74,30 +74,38 @@ async function RetrieveQuestionsList() {
     else throw list;
 }
 
-async function RetrieveAllSurveys(){
+async function RetrieveAllSurveys() {
     // call GET /api/surveys/all
     const response = await fetch('/api/surveys/all');
     const list = await response.json();
     if (response.ok)
-        return list.map( l => ({id: l.id, title: l.title, author: l.author, answers: l.answers, userId: l.userId, questions: l.questions}));
+        return list.map(l => ({ id: l.id, title: l.title, author: l.author, answers: l.answers, userId: l.userId, questions: l.questions }));
     else throw list;
 }
 
-function AddAnswerDB(compiled){
+function AddAnswerDB(compiled) {
     // call POST /api/addAnswer
     return new Promise((resolve, reject) => {
-        const a = {idS: compiled.idS, name: compiled.name, answers: compiled.answers};
+        const a = { idS: compiled.idS, name: compiled.name, answers: compiled.answers };
         fetch('/api/AddAnswer', {
-            method: 'POST', 
-            headers: {'Content-type': 'application/json'},
+            method: 'POST',
+            headers: { 'Content-type': 'application/json' },
             body: JSON.stringify(a),
         }).then((response) => {
-            if(response.ok)
+            if (response.ok)
                 resolve();
             else response.json().then(obj => reject(obj));
         }).catch(err => reject(err))
     })
 }
 
-const API = {login, getUserInfo, logout, AddSurveyDB, RetrieveSurveyList, RetrieveQuestionsList, RetrieveAllSurveys, AddAnswerDB};
+async function RetrieveAnswers() {
+    // call GET /api/answers
+    const response = await fetch('/api/answers');
+    const list = await response.json();
+    if (response.ok)
+        return list.map(r => ({id: r.id, idS: r.idS, name: r.name, data: r.data}));
+    else throw list;
+}
+const API = { login, getUserInfo, logout, AddSurveyDB, RetrieveSurveyList, RetrieveQuestionsList, RetrieveAllSurveys, AddAnswerDB, RetrieveAnswers };
 export default API;

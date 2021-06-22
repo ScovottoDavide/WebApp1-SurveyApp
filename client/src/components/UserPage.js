@@ -1,6 +1,6 @@
 import SidebarSurvey from "./Sidebar";
 import SurveyNavbar from './Navbar';
-import { Table, Button, Form, Spinner } from 'react-bootstrap';
+import { Table, Button, Form, Spinner, Alert } from 'react-bootstrap';
 import { CardChecklist } from 'react-bootstrap-icons'
 import { Container } from 'react-bootstrap';
 import { NavLink } from 'react-router-dom'
@@ -12,9 +12,14 @@ function UserPage(props) {
             <SidebarSurvey loggedIn={props.loggedIn} />
             <Container className="col-sm-8 col-12 below-nav">
                 {
-                    props.loadingU ? <span className="col-sm-8 col-12 below-nav spinner"><Spinner animation="border" /></span>
+                    props.errorMsg.msg ?
+                        <Alert variant={props.errorMsg.type} onClose={() => props.setErrorMsg('')} dismissible> {props.errorMsg.msg} </Alert>
                         :
-                        <UserPageContent allSurveys={props.allSurveys} userInfo={props.userInfo} setToAnswer={props.setToAnswer} />
+                        <>{
+                            props.loadingU ? <span className="col-sm-8 col-12 below-nav spinner"><Spinner animation="border" /></span>
+                                :
+                                <UserPageContent allSurveys={props.allSurveys} userInfo={props.userInfo} setToAnswer={props.setToAnswer} />
+                        }</>
                 }
             </Container>
 

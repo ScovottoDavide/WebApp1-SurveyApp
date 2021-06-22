@@ -17,7 +17,7 @@ function UserAnswer(props) {
             return { ...old, name: value }
         });
     }
-
+    
     const findFormErrors = () => {
         const newErrors = { name: '', reqs: [] };
         if (compiled.name === '')
@@ -41,6 +41,10 @@ function UserAnswer(props) {
                 })
             }
         }
+        const over200 = compiled.answers.map(a => a.data).filter(d => d.length>200);
+        console.log(compiled.answers.map(a => a.data).filter(d => d.length>200));
+        if(over200.length>0)
+            newErrors.over200 = "Cannot use more than 200 characters";
         return newErrors;
     }
 
@@ -79,7 +83,7 @@ function UserAnswer(props) {
                         </Col>
                         <Form.Group className="mb-3 mt-5" controlId="formQuestion">
                             {toAnswer.questions ?
-                                toAnswer.questions.map((q) => <UserAnswerRow key={q.id} question={q} questions={toAnswer.questions} compiled={compiled} reqs={errors.reqs} setCompiled={setCompiled} />)
+                                toAnswer.questions.map((q) => <UserAnswerRow key={q.id} question={q} questions={toAnswer.questions} compiled={compiled} reqs={errors.reqs} setCompiled={setCompiled} errors={errors}/>)
                                 :
                                 <Redirect to="/user" />
                             }
@@ -121,7 +125,7 @@ function UserAnswerRow(props) {
                     <UserMultipleChoiceRow key={o.id} option={o} questions={props.questions} question={props.question} compiled={props.compiled}
                         setCompiled={props.setCompiled} max={props.question.max} />)
                     :
-                    <UserOpenChoiceRow key={props.question.id} question={props.question} compiled={props.compiled} setCompiled={props.setCompiled} />
+                    <UserOpenChoiceRow key={props.question.id} question={props.question} compiled={props.compiled} setCompiled={props.setCompiled} errors={props.errors}/>
                 }
             </Container>
         </>
@@ -228,7 +232,8 @@ function UserOpenChoiceRow(props) {
 
     return (
         <Form.Row className="mt-3 mb-4">
-            <Form.Control as="textarea" placeholder="max 200 characters" style={{ height: '150px' }} onChange={(event) => addAnswer(event.target.value)} />
+            <Form.Control as="textarea" isInvalid={!!props.errors.over200} placeholder="max 200 characters" style={{ height: '150px' }} onChange={(event) => addAnswer(event.target.value)} />
+            <Form.Control.Feedback type="invalid">{props.errors.over200}</Form.Control.Feedback>
         </Form.Row>
     );
 }

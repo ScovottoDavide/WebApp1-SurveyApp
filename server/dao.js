@@ -42,7 +42,7 @@ exports.addOption = (option, idQ) => {
     })
 }
 
-//GET the list of all surveys per user 
+//GET the list of all surveys per admin 
 exports.listSurveys = (userid) => {
     return new Promise((resolve, reject) => {
         const sql = 'SELECT * FROM surveys WHERE userId=?';
@@ -154,5 +154,34 @@ exports.UpdateNumAnswers = (idS) => {
                 }
             })
             resolve(this.lastID);
+    })
+}
+
+exports.getAnswers = (userId) => {
+    return new Promise((resolve, reject) => {
+        const sql = 'SELECT answers.id, answers.idS, answers.name FROM answers, surveys WHERE surveys.userId=? AND surveys.id=answers.idS';
+        db.all(sql, [userId], async (err, rows) => {
+            if(err){
+                reject(err);
+                return;
+            }
+            const data_answer = await this.getDataAnswers();
+            const answers = rows.map(r => ({id: r.id, idS: r.idS, name: r.name, data: data_answer.filter(a => a.idA===r.id)}));
+            resolve(answers);
+        })
+    })
+}
+
+exports.getDataAnswers = () => {
+    return new Promise((resolve, reject) => {
+        const sql = 'SELECT * FROM data_answers';
+        db.all(sql, [], (err, rows) => {
+            if(err){
+                reject(err);
+                return;
+            }
+            const data_answer = rows.map(r => ({id: r.id, idQ: r.idQ, data: r.data, idA: r.idA}));
+            resolve(data_answer);
+        })
     })
 }

@@ -14,12 +14,10 @@ function AdminPage(props) {
             <Container className="col-sm-8 col-12 below-nav">
                 {props.errorMsg.msg && <Alert variant={props.errorMsg.type} onClose={() => props.setErrorMsg('')} dismissible> {props.errorMsg.msg} </Alert>}
                 <NavLink to="/admin/addSurvey"><Button type="submit" size="lg" variant="success" className="fixed-right-bottom">&#43;</Button></NavLink>
-                {
-                    props.loadingA ? <span className="col-sm-8 col-12 below-nav spinner"><Spinner animation="border" /></span>
+                {props.loadingA ? <span className="col-sm-8 col-12 below-nav spinner"><Spinner animation="border" /></span>
                     :
-                    <AdminPageContent surveys={props.surveys} userInfo={props.userInfo} />
-                }
-                
+                    <AdminPageContent surveys={props.surveys} userInfo={props.userInfo} answers={props.answers} />}
+
             </Container>
         </>
     );
@@ -40,7 +38,7 @@ function AdminPageContent(props) {
                 </thead>
                 <tbody>
                     {
-                        props.surveys.map((s) => <SurveyRow key={s.id} survey={s} surveys={props.surveys} />)
+                        props.surveys.map((s) => <SurveyRow key={s.id} survey={s} surveys={props.surveys} answers={props.answers} />)
                     }
                 </tbody>
             </Table>
@@ -57,7 +55,7 @@ function SurveyRow(props) {
         default:
             break;
     }
-    return <tr className={statusClass}><SurveyRowData survey={props.survey} surveys={props.surveys} /><SurveyRowControl survey={props.survey} /></tr>
+    return <tr className={statusClass}><SurveyRowData survey={props.survey} surveys={props.surveys} /><SurveyRowControl survey={props.survey} answers={props.answers} /></tr>
 }
 
 function SurveyRowData(props) {
@@ -79,8 +77,16 @@ function SurveyRowControl(props) {
     }
     return (
         <td>
-            <Button type="submit" size="sm" variant="outline-success" onClick={handleClick}><EyeFill size={20} /></Button>
-            {errorMsg && <Alert className="alert small" variant="warning" size="sm" onClick={() => setErrorMsg('')} dismissible>{errorMsg}</Alert>}
+            {props.survey.answers > 0 ?
+                <NavLink to={{
+                    pathname: "/admin/readAnswers",
+                    state: { answers: props.answers.filter(a => a.idS === props.survey.id), survey: props.survey }
+                }}>
+                    <Button type="submit" size="sm" variant="outline-success" onClick={handleClick}><EyeFill size={20} /></Button>
+                </NavLink> :
+                <><Button type="submit" size="sm" variant="outline-success" onClick={handleClick}><EyeFill size={20} /></Button>
+                {errorMsg && <Alert className="alert small" variant="warning" size="sm" onClick={() => setErrorMsg('')} dismissible>{errorMsg}</Alert>}</>
+            }
         </td>
 
 
