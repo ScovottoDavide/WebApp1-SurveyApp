@@ -25,8 +25,8 @@ function AdminRead(props) {
     return (
         <>
             <SurveyNavbar doLogout={props.doLogout} userInfo={props.userInfo} loggedIn={props.loggedIn} />
-            <Container className="below-nav" fluid>
-                <Nav variant="tabs" className="navbar navbar-ligth backNav " >
+            <Container className="below-nav sfondo" fluid>
+                <Nav variant="tabs" className="navbar navbar-ligth backNav">
                     <Col>
                         <Nav.Item>
                             <Nav.Link className="text-right" active={!readingA} onClick={() => setReadingA(false)}>Survey</Nav.Link>
@@ -63,9 +63,9 @@ function ReadContent(props) {
                             <Form.Text as="h3" className="text-left mb-3 mt-3">Compiled by: <i>{props.answer.name}</i></Form.Text>
                         </Col>
                         <Form.Row className="d-flex justify-content-center">
-                            <Button className="ml-3 mb-1" variant="outline-success" size="sm"><ArrowReturnLeft onClick={props.handleLeft} /></Button>
+                            <Button className="ml-3 mb-1 bianco" variant="outline-success" size="sm" onClick={props.handleLeft}><ArrowReturnLeft /></Button>
                             <Form.Text as="i" className="ml-3">{props.index + 1}/{props.answers.length}</Form.Text>
-                            <Button className="ml-3 mb-1" variant="outline-success" size="sm"><ArrowReturnRight onClick={props.handleRigth} /></Button>
+                            <Button className="ml-3 mb-1 bianco" variant="outline-success" size="sm" onClick={props.handleRigth} ><ArrowReturnRight /></Button>
                         </Form.Row>
                         <Form.Group className="mb-3 mt-4" controlId="formQuestion">
                             {props.survey.questions ?
@@ -75,12 +75,12 @@ function ReadContent(props) {
                             }
                         </Form.Group>
                         <Form.Row className="mb-4 d-flex justify-content-center">
-                            <Button className="ml-3 mb-1" variant="outline-success" size="sm"><ArrowReturnLeft onClick={props.handleLeft} /></Button>
+                            <Button className="ml-3 mb-1 bianco" variant="outline-success" size="sm" onClick={props.handleLeft}><ArrowReturnLeft /></Button>
                             <Form.Text as="i" className="ml-3">{props.index + 1}/{props.answers.length}</Form.Text>
-                            <Button className="ml-3 mb-1" variant="outline-success" size="sm"><ArrowReturnRight onClick={props.handleRigth} /></Button>
+                            <Button className="ml-3 mb-1 bianco" variant="outline-success" size="sm" onClick={props.handleRigth}><ArrowReturnRight /></Button>
                         </Form.Row>
                         <NavLink to="/admin">
-                            <Button className="fixed-left-bottom" variant="outline-dark" onClick={() => { props.setDirty(true); props.setLoadingA(true) }}>
+                            <Button className="fixed-left-bottom bianco" variant="outline-dark" onClick={() => { props.setDirty(true); props.setLoadingA(true) }}>
                                 <ArrowLeft /> Return
                             </Button>
                         </NavLink>
@@ -123,7 +123,7 @@ function UserAnswerRow(props) {
 function UserMultipleChoiceRow(props) {
     return (
         <Form.Row className="mt-2 mb-4 ml-3">
-            {props.answer.data.length===0 ? <Form.Check readOnly label={props.option.titleO} checked={false}/> :
+            {props.answer.data.length === 0 ? <Form.Check readOnly label={props.option.titleO} checked={false} /> :
                 props.answer.data.map(d => ({ idQ: d.idQ, data: d.data.split(",") })).filter(a => a.idQ === props.question.id)
                     .map(d => ({ id: props.option.id, title: props.option.titleO, data: d.data.includes(props.option.id.toString()) }))
                     .map((o) => <Form.Check key={o.id} readOnly label={o.title} checked={o.data} />)

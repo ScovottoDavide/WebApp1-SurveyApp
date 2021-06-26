@@ -3,21 +3,21 @@ import { Redirect, useLocation } from 'react-router'
 import { Container, Row, Col, Form, Button, Spinner } from 'react-bootstrap';
 import API from '../API'
 
-function UserAnswer(props) {
+function UserAnswer() {
 
     const location = useLocation();
     const toAnswer = location.state ? location.state.survey : {};
     const [compiled, setCompiled] = useState({ idS: toAnswer.id, name: '', answers: [] });
     const [submitted, setSubmitted] = useState(false);
     const [loadingU, setLoadingU] = useState(false);
-    const [errors, setErrors] = useState({ name: '', reqs: [] });
+    const [errors, setErrors] = useState({ name: '', reqs: [], over200: ''});
 
     const handleName = (value) => {
         setCompiled((old) => {
             return { ...old, name: value }
         });
     }
-    
+
     const findFormErrors = () => {
         const newErrors = { name: '', reqs: [] };
         if (compiled.name === '')
@@ -29,21 +29,20 @@ function UserAnswer(props) {
                     newErrors.reqs.push({ id: r, msg: 'This question is mandatory!' });
                 })
             }
-            else{
-                requiredQ.forEach( r => {
-                    if(!compiled.answers.map(a => a.idQ).includes(r)){
+            else {
+                requiredQ.forEach(r => {
+                    if (!compiled.answers.map(a => a.idQ).includes(r)) {
                         newErrors.reqs.push({ id: r, msg: 'This question is mandatory!' });
                     }
-                    compiled.answers.filter(a => a.idQ===r).map(a => a.data).forEach(d => {
-                        if(d.length===0 || d==="")
+                    compiled.answers.filter(a => a.idQ === r).map(a => a.data).forEach(d => {
+                        if (d.length === 0 || d === "")
                             newErrors.reqs.push({ id: r, msg: 'This question is mandatory!' });
                     })
                 })
             }
         }
-        const over200 = compiled.answers.map(a => a.data).filter(d => d.length>200);
-        console.log(compiled.answers.map(a => a.data).filter(d => d.length>200));
-        if(over200.length>0)
+        const over200 = compiled.answers.map(a => a.data).filter(d => d.length > 200);
+        if (over200.length > 0)
             newErrors.over200 = "Cannot use more than 200 characters";
         return newErrors;
     }
@@ -52,11 +51,12 @@ function UserAnswer(props) {
         event.preventDefault();
 
         const errs = findFormErrors();
-        if (errs.name!=="" || errs.reqs.length > 0){
+        if (errs.name !== "" || errs.reqs.length > 0 || (errs.over200 !== "" && errs.over200!==undefined)) {
             console.log(errs);
             setErrors(errs);
         }
         else {
+            console.log("salva")
             setLoadingU(true);
             API.AddAnswerDB(compiled).then(() => {
                 setLoadingU(false);
@@ -65,7 +65,7 @@ function UserAnswer(props) {
         }
     }
     return (
-        <Container className="below-nav" fluid>
+        <Container className="below-nav sfondo" fluid>
             <Row className="vheight-100 justify-content-center">
                 <Col></Col>
                 <Col lg={7} className="text-center">
@@ -83,7 +83,7 @@ function UserAnswer(props) {
                         </Col>
                         <Form.Group className="mb-3 mt-5" controlId="formQuestion">
                             {toAnswer.questions ?
-                                toAnswer.questions.map((q) => <UserAnswerRow key={q.id} question={q} questions={toAnswer.questions} compiled={compiled} reqs={errors.reqs} setCompiled={setCompiled} errors={errors}/>)
+                                toAnswer.questions.map((q) => <UserAnswerRow key={q.id} question={q} questions={toAnswer.questions} compiled={compiled} reqs={errors.reqs} setCompiled={setCompiled} errors={errors} />)
                                 :
                                 <Redirect to="/user" />
                             }
@@ -125,7 +125,7 @@ function UserAnswerRow(props) {
                     <UserMultipleChoiceRow key={o.id} option={o} questions={props.questions} question={props.question} compiled={props.compiled}
                         setCompiled={props.setCompiled} max={props.question.max} />)
                     :
-                    <UserOpenChoiceRow key={props.question.id} question={props.question} compiled={props.compiled} setCompiled={props.setCompiled} errors={props.errors}/>
+                    <UserOpenChoiceRow key={props.question.id} question={props.question} compiled={props.compiled} setCompiled={props.setCompiled} errors={props.errors} />
                 }
             </Container>
         </>
@@ -229,11 +229,15 @@ function UserOpenChoiceRow(props) {
             })
         }
     }
-
+    
     return (
         <Form.Row className="mt-3 mb-4">
-            <Form.Control as="textarea" isInvalid={!!props.errors.over200} placeholder="max 200 characters" style={{ height: '150px' }} onChange={(event) => addAnswer(event.target.value)} />
-            <Form.Control.Feedback type="invalid">{props.errors.over200}</Form.Control.Feedback>
+            <Form.Control as="textarea" isInvalid={
+                props.compiled.answers.find(a => a.idQ === props.question.id) ? props.compiled.answers.find(a => a.idQ === props.question.id).data !== '' && !!props.errors.over200
+                    : ''}
+                placeholder="max 200 characters"
+                style={{ height: '150px' }} onChange={(event) => addAnswer(event.target.value)} />
+            {props.question.titleQ !== "" ? <Form.Control.Feedback type="invalid"> {props.errors.over200} </Form.Control.Feedback> : ''}
         </Form.Row>
     );
 }

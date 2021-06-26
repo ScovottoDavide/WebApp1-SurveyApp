@@ -27,13 +27,15 @@
 .question-border{
   border-style: groove;
   border-radius: 5px;
-  border-color: lightslategray;
+  border-color: rgb(42, 119, 196);
+  background-color: white;
 }
 
 .title-border{
   border-style: dotted;
   border-radius: 5px;
   border-color: darkgray;
+  background-color: white;
 }
 
 
@@ -84,4 +86,12 @@
 .backNav{
   background-color: whitesmoke;
   
+}
+
+.sfondo{
+  background-color: aliceblue;
+}
+
+.bianco{
+  background-color: white;
 }

@@ -91,15 +91,14 @@ app.post('/api/logout', (req, res) => {
 /* SURVEY DB API's */
 
 //create a new survey
-app.post('/api/addSurvey',[
-  check('id').isInt({min: 0}),
+app.post('/api/addSurvey', [
+  check('id').isInt({ min: 0 }),
   check('title').notEmpty(),
-  check('answers').isInt({min: 0}),
-  check('user').isInt({min: 1}),
-  check('questions').isArray({min: 1}) 
+  check('answers').isInt({ min: 0 }),
+  check('questions').isArray({ min: 1 })
 ], isLoggedIn, async (req, res) => {
   const errors = validationResult(req);
-  if(!errors.isEmpty())
+  if (!errors.isEmpty())
     return res.status(400).json({ errors: errors.array() })
   const newSurvey = {
     id: req.body.id,
@@ -110,14 +109,17 @@ app.post('/api/addSurvey',[
   };
   try {
     const id1 = await dao.createSurvey(newSurvey);
-    newSurvey.questions.forEach(async question => {
-      const id2 = await dao.addQuestion(question, id1);
-      if (question.type !== 0) {
-        question.options.forEach(async option => {
-          await dao.addOption(option, id2);
-        })
+
+    for (let i = 0; i < newSurvey.questions.length; i++) {
+      if (newSurvey.questions[i].type !== 0) {
+        const id2 = await dao.addQuestion(newSurvey.questions[i], id1);
+        for (let j = 0; j < newSurvey.questions[i].options.length; j++) {
+          await dao.addOption(newSurvey.questions[i].options[j], id2);
+        }
       }
-    });
+      else
+        await dao.addQuestion(newSurvey.questions[i], id1);
+    }
     res.status(201).end();
   } catch (err) {
     res.status(503).json({ error: `Database error during creation of survey ${newSurvey.title}` })
@@ -126,12 +128,12 @@ app.post('/api/addSurvey',[
 
 //create a new answer
 app.post('/api/AddAnswer', [
-  check('idS').isInt({min: 1}),
+  check('idS').isInt({ min: 1 }),
   check('name').notEmpty(),
   check('answers').isArray()
 ], async (req, res) => {
   const errors = validationResult(req);
-  if(!errors.isEmpty())
+  if (!errors.isEmpty())
     return res.status(400).json({ errors: errors.array() })
   const newAnswer = {
     idS: req.body.idS,
@@ -191,10 +193,10 @@ app.get('/api/surveys/questions', isLoggedIn, async (req, res) => {
 
 // Get the list of all answers
 app.get('/api/answers', isLoggedIn, async (req, res) => {
-  try{
+  try {
     const answers = await dao.getAnswers(req.user.id);
     res.json(answers);
-  }catch (err){
+  } catch (err) {
     res.status(500).end();
   }
 })
