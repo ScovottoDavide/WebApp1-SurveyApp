@@ -52,11 +52,9 @@ function UserAnswer() {
 
         const errs = findFormErrors();
         if (errs.name !== "" || errs.reqs.length > 0 || (errs.over200 !== "" && errs.over200!==undefined)) {
-            console.log(errs);
             setErrors(errs);
         }
         else {
-            console.log("salva")
             setLoadingU(true);
             API.AddAnswerDB(compiled).then(() => {
                 setLoadingU(false);

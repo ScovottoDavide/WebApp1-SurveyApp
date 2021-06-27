@@ -135,7 +135,6 @@ exports.addAnswerData = (answer, idA) => {
         const sql = 'INSERT INTO data_answers(idQ, data, idA) VALUES(?, ?, ?)';
         db.run(sql, [answer.idQ, answer.data.toString(), idA], function (err) {
             if (err) {
-                console.log(err);
                 reject(err);
                 return;
             }

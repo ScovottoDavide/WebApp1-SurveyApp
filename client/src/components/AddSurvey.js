@@ -279,14 +279,10 @@ function MultipleChoiceRow(props) {
     }
 
     const arrDelete = (arr, Index) => {
-        console.log(props.question.options);
         arr.splice(Index, 1);
     }
 
     const deleteOption = (id) => {
-        
-        console.log(id);
-
         const tmp = props.question.options[id + 1].id;
         props.question.options[id + 1].id = props.question.options[id].id
         props.question.options[id].id = tmp;
