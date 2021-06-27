@@ -164,7 +164,7 @@ function ReadSurvey(props) {
                             }
                         </Form.Group>
                         <NavLink to="/admin">
-                            <Button className="fixed-left-bottom" variant="outline-dark" onClick={() => { props.setDirty(true); props.setLoadingA(true) }}>
+                            <Button className="fixed-left-bottom bianco" variant="outline-dark" onClick={() => { props.setDirty(true); props.setLoadingA(true) }}>
                                 <ArrowLeft /> Return
                             </Button>
                         </NavLink>

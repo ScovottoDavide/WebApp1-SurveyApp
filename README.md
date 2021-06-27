@@ -213,7 +213,7 @@
             - Se si è loggati le informazioni riguardanti l'utente: **Email** e **Nome**.
 ## Screenshot
 
-![Screenshot](./img/screenshot.jpg)
+![Screenshot](./img/Questionario.jpg)
 
 ## Users Credentials
 
